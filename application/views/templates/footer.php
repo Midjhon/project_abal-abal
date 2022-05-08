@@ -76,9 +76,42 @@
 				}
 			});
 		});
-		    
+
 			
 	</script>
+
+    <script src="<?= base_url('assets/'); ?>js/script.js"></script>
+
+    <!-- sambungkan script untuk dataTables nya -->
+    <script src="<?= base_url('assets/'); ?>js/data_tables/jquery-3.5.1.js"></script>
+    <script src="<?= base_url('assets/'); ?>js/data_tables/jquery.dataTables.min.js"></script>
+    <script src="<?= base_url('assets/'); ?>js/data_tables/dataTables.bootstrap4.min.js"></script>
+    <!-- lalu atur table disini -->
+    <script>
+        $(document).ready(function() {
+            $('#dataTables').DataTable();
+        } );
+
+        // modal edit
+        // $(document).ready(function(){
+        //     $(document).on('click', '#edit_dokter',function() {
+        //         var nip = $(this).data('nip');
+        //         var nama_dokter = $(this).data('nama_dokter');
+        //         var spesialis = $(this).data('spesialis');
+        //         var email = $(this).data('email');
+        //         var alamat = $(this).data('alamat');
+        //         var no_telp = $(this).data('no_telp');
+        //         $('#nip').val(nip);
+        //         $('#nama_dokter').val(nama_dokter);
+        //         $('#spesialis').val(spesialis);
+        //         $('#email').val(email);
+        //         $('#alamat').val(alamat);
+        //         $('#no_telp').val(no_telp);
+        //     })
+        // })
+
+    </script>
+
 
 </body>
 
