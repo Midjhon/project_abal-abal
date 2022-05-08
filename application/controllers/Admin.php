@@ -15,6 +15,10 @@ class Admin extends CI_Controller
 		// ambil data
 		$data['user'] = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array();
 		
+		// buat angka jumlah pasien secara dinamis di dashboard
+		$this->load->model('Pasien_model');
+		$data['jlh_pasien'] = $this->Pasien_model->hitungAllPasiens();
+
 		// panggil view nya
 		$this->load->view('templates/header', $data);
 		$this->load->view('templates/sidebar', $data);

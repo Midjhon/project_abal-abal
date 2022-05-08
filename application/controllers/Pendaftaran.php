@@ -1,7 +1,7 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Pendaftaran extends CI_Controller 
+class Pendaftaran extends CI_Controller
 {
     public function __construct()
 	{
@@ -9,16 +9,29 @@ class Pendaftaran extends CI_Controller
 		// cek kalo blm login -> pake helper
 		is_logged_in();
 	}
-	public function index()
+    public function index()
 	{
-		$data['title'] = 'Pendaftaran Pasien';
+		$data['title'] = 'Pasien';
 		// ambil data
 		$data['user'] = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array();
-		
-		// rules
-		$this->form_validation->set_rules('no_rm', 'No_rm', 'required|trim|integer|max_length[6]', [
+        // panggil view nya
+		$this->load->view('templates/header', $data);
+		$this->load->view('templates/sidebar', $data);
+		$this->load->view('templates/topbar', $data);
+		$this->load->view('pendaftaran/index' );  //=> buat view user dgn folder index.php
+		$this->load->view('templates/footer');
+    }
+    public function pasienBaru()
+    {
+        $data['title'] = 'Pasien';
+		// ambil data
+		$data['user'] = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array();
+        
+        // rules
+		$this->form_validation->set_rules('no_rm', 'No_rm', 'required|trim|max_length[6]|integer|is_unique[pasien.no_rm]' , [
 			'required' => 'Nomor rekam medis Wajib diisi!',
 			'integer' => 'Isi harus berupa angka',
+            'is_unique' => 'No. Rekam Medis Sudah Terdaftar',
 			'max_length' => 'Isi maximal 6 karakter'
 		]); 
 		
@@ -26,9 +39,6 @@ class Pendaftaran extends CI_Controller
 			'required' => 'Nama Wajib diisi!'
 		]);
 
-		$this->form_validation->set_rules('tgl_kunjungan', 'tgl_kunjungan', 'required|trim', [
-			'required' => 'tanggal kunjungan Wajib diisi!'
-		]);
 		
 		$this->form_validation->set_rules('umur', 'umur', 'required|trim', [
 			'required' => 'Umur Wajib diisi!'
@@ -50,8 +60,9 @@ class Pendaftaran extends CI_Controller
 			'required' => 'pekerjaan Wajib diisi!'
 		]);
 
-		$this->form_validation->set_rules('no_hp', 'no_hp', 'required|trim', [
-			'required' => 'no. hp Wajib diisi!'
+		$this->form_validation->set_rules('no_hp', 'no_hp', 'required|trim|integer', [
+			'required' => 'no. hp Wajib diisi!',
+            'integer' => 'No. Handphone harus berupa angka',
 		]);
 
 		if( $this->form_validation->run() == false ) 
@@ -60,7 +71,7 @@ class Pendaftaran extends CI_Controller
 			$this->load->view('templates/header', $data);
 			$this->load->view('templates/sidebar', $data);
 			$this->load->view('templates/topbar', $data);
-			$this->load->view('pendaftaran/index', $data);  //=> buat view user dgn folder index.php
+			$this->load->view('pendaftaran/pasienBaru', $data);  //=> buat view user dgn folder index.php
 			$this->load->view('templates/footer');
 		} else {
 			$data = [
@@ -86,28 +97,126 @@ class Pendaftaran extends CI_Controller
 													   </div>');
 			
 			// pindhka ke hal login
-			redirect('pendaftaran/daftarKunjungan');
+			redirect('pendaftaran/pasienLama');
+        }
 
-		}
-		
-	}
+    }
 
-	public function daftarKunjungan()
-	{
-		$data['title'] = 'Pendaftaran Pasien';
+    public function pasienLama()
+    {
+        $data['title'] = 'Pasien';
+
+		// ambil data
 		$data['user'] = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array();
+		
 
-		$this->load->model('Pasien_model','pasien');
-		$data['pasien'] = $this->db->get('pasien')->result_array();
+		// query data menu nya
+		$data['pasien'] = $this->db->get('pasien')-> result_array(); //-> looping menunya di view indexnya
+		
+		// load model
+		$this->load->model('Pasien_model', 'pasien');
 
+		$data['hasil'] = $this->pasien->dataTabel('pasien');
+		
+		// kondisi
+		if($this->form_validation->run() == false ) { //-> SIMPAN form_validation di autoload.php
+			// panggil view nya
+			$this->load->view('templates/header', $data);
+			$this->load->view('templates/sidebar', $data);
+			$this->load->view('templates/topbar', $data);
+			$this->load->view('pendaftaran/pasienLama', $data);  //=> buat view user dgn folder index.php
+			$this->load->view('templates/footer');
+		} else {
+			// insert 
+			$this->db->insert('user_menu', ['menu' => $this->input->post('menu')]);
+			// kasih pesan => flash data
+			$this->session->set_flashdata('message', '<div class="alert alert-success" role="alert">
+														 New menu added!
+													   </div>');
+			redirect('menu');
 
-		// panggil view nya
-		$this->load->view('templates/header', $data);
-		$this->load->view('templates/sidebar', $data);
-		$this->load->view('templates/topbar', $data);
-		$this->load->view('pendaftaran/daftarKunjungan', $data);  
-		$this->load->view('templates/footer');
-	}
+        }
+    }
+	public function detailPasien($id)
+    {
+        $data['title'] = 'Pendaftaran Pasien';
+        $data['user'] = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array();
+
+        $data['pasien'] = $this->db->get_where('pasien', ['id' => $id])->row_array();
+
+        $this->form_validation->set_rules('no_rm', 'no.RM', 'required|trim', [
+            "required" => "No R.M tidak boleh kosong"
+        ]);
+
+        if ($this->form_validation->run() == false) {
+            $this->load->view('templates/header', $data);
+            $this->load->view('templates/sidebar', $data);
+            $this->load->view('templates/topbar', $data);
+            $this->load->view('pendaftaran/detailPasien', $data);
+            $this->load->view('templates/footer');
+        } else {
+            $data = [
+                'id' => $this->input->post('id', true),
+                'no_rm' => $this->input->post('no_rm', true),
+                'nama' => $this->input->post('nama', true),
+                'tgl_kunjungan' => $this->input->post('tgl_kunjungan', true),
+                'umur' => $this->input->post('umur', true),
+                'jenis_kelamin' => $this->input->post('jenis_kelamin', true),
+                'alamat' => $this->input->post('alamat', true),
+                'agama' => $this->input->post('agama', true),
+                'pekerjaan' => $this->input->post('pekerjaan', true),
+                'no_hp' => $this->input->post('no_hp', true),
+            ];
+        }
+    }
+
+	public function editPasien($id)
+    {
+        $data['title'] = 'Pendaftaran Pasien';
+        $data['user'] = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array();
+
+        $data['pasien'] = $this->db->get_where('pasien', ['id' => $id])->row_array();
+
+        $this->form_validation->set_rules('no_rm', 'no.RM', 'required|trim', [
+            "required" => "No R.M tidak boleh kosong"
+        ]);
+
+        if ($this->form_validation->run() == false) {
+            $this->load->view('templates/header', $data);
+            $this->load->view('templates/sidebar', $data);
+            $this->load->view('templates/topbar', $data);
+            $this->load->view('pendaftaran/editPasien', $data);
+            $this->load->view('templates/footer');
+        } else {
+            $data = [
+                'id' => $this->input->post('id', true),
+                'no_rm' => $this->input->post('no_rm', true),
+                'nama' => $this->input->post('nama', true),
+                'tgl_kunjungan' => time(),
+                'umur' => $this->input->post('umur', true),
+                'jenis_kelamin' => $this->input->post('jenis_kelamin', true),
+                'alamat' => $this->input->post('alamat', true),
+                'agama' => $this->input->post('agama', true),
+                'pekerjaan' => $this->input->post('pekerjaan', true),
+                'no_hp' => $this->input->post('no_hp', true),
+            ];
+
+            $this->db->where('id', $id);
+            $this->db->update('pasien', $data);
+
+            $this->session->set_flashdata('message', '<div class="alert alert-success" role="alert">Data Pasien berhasil diperbaharui!</div>');
+            redirect('pendaftaran/pasienLama');
+        }
+    }
+
+	public function deletePasien($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete('pasien');
+        $this->session->set_flashdata('message', '<div class="alert alert-success" role="alert">Data Pasien berhasil dihapus!</div>');
+        redirect('pendaftaran/pasienLama');
+    }
+
 
 
 }

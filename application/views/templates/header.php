@@ -20,6 +20,12 @@
     <!-- Custom styles for this template-->
     <link href="<?= base_url('assets/'); ?>css/sb-admin-2.min.css" rel="stylesheet">
 
+    <!-- css dataTables -->
+    <!-- css utk memperjelas tulisan -->
+    <link rel="stylesheet" href="<?= base_url('assets/'); ?>css/data_tables/text_beauty.css">
+    <!-- css utk mengatur letak input search dll-->
+    <link rel="stylesheet" href="<?= base_url('assets/'); ?>css/data_tables/dataTables.bootstrap4.min.css">
+
 </head>
 
 <body id="page-top">

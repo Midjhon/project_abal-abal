@@ -53,4 +53,5 @@ function check_access($role_id, $menu_id)
     if ($result->num_rows() > 0) {
         return "checked = 'checked' ";
     }
+	
 }
